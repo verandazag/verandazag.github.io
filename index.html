@@ -156,10 +156,10 @@
         <div class="max-w-5xl mx-auto px-4 py-2.5">
             
             <!-- Controls Row: Search & Language Toggle -->
-            <div class="flex items-center justify-center mb-2">
+            <div class="flex items-center justify-between gap-3 mb-2">
 
                 <!-- Search Box -->
-                <div class="relative w-full sm:w-96">
+                <div class="relative flex-1 min-w-0 sm:flex-none sm:w-80">
                     <input type="text" 
                            x-model="searchQuery" 
                            :placeholder="lang === 'ar' ? 'إبحث عن مشروبك أو تحليتك...' : (lang === 'en' ? 'Search drinks or desserts...' : 'بحث / Search...')" 
@@ -168,6 +168,12 @@
                     <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="absolute top-1/2 -translate-y-1/2 text-veranda-olive text-xs" :class="lang === 'en' ? 'right-8' : 'left-8'">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
+                </div>
+
+                <!-- Language Toggle: Arabic / English -->
+                <div class="flex items-center flex-shrink-0 bg-veranda-cream border border-veranda-olive/30 rounded-full p-0.5 text-xs font-semibold text-veranda-darkOlive shadow-inner" role="group" aria-label="Language">
+                    <button @click="lang = 'ar'" :aria-pressed="lang === 'ar'" :class="lang === 'ar' ? 'bg-veranda-olive text-veranda-cream shadow-sm' : ''" class="px-3 py-1 rounded-full transition-all">عربي</button>
+                    <button @click="lang = 'en'" :aria-pressed="lang === 'en'" :class="lang === 'en' ? 'bg-veranda-olive text-veranda-cream shadow-sm' : ''" class="px-3 py-1 rounded-full transition-all">English</button>
                 </div>
 
             </div>
@@ -463,7 +469,7 @@
     <script>
         function menuApp() {
             return {
-                lang: 'both', // 'ar', 'en', 'both'
+                lang: 'ar', // 'ar' or 'en'
                 whatsappNumber: '201010005391', // 010 10005391 (Egypt, international format)
                 searchQuery: '',
                 activeCategory: 'ALL',
@@ -772,10 +778,16 @@
                 ],
 
                 initData() {
-                    // Menu always shows Arabic with English underneath (no language switch)
-                    this.lang = 'both';
-                    try { localStorage.removeItem('veranda_lang'); } catch (e) {}
+                    // Arabic by default; remember the visitor's choice and flip page direction with it
+                    try {
+                        const saved = localStorage.getItem('veranda_lang');
+                        this.lang = (saved === 'en') ? 'en' : 'ar';
+                    } catch (e) { this.lang = 'ar'; }
                     this.applyLang();
+                    this.$watch('lang', () => {
+                        this.applyLang();
+                        try { localStorage.setItem('veranda_lang', this.lang); } catch (e) {}
+                    });
                 },
 
                 applyLang() {
